@@ -42,6 +42,7 @@ import {
   PaperclipIcon,
   StopIcon,
 } from "./icons";
+import { LocationSelector } from "./location-selector";
 import { PreviewAttachment } from "./preview-attachment";
 import { SuggestedActions } from "./suggested-actions";
 import { Button } from "./ui/button";
@@ -378,6 +379,7 @@ function PureMultimodalInput({
               onModelChange={onModelChange}
               selectedModelId={selectedModelId}
             />
+            <LocationSelector />
           </PromptInputTools>
 
           {status === "submitted" ? (
