@@ -20,7 +20,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: lts/*
+          node-version: 24.x      # Updated to 24.x
           # Cache line removed
 
       - name: Install dependencies
