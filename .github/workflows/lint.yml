@@ -20,7 +20,7 @@ jobs:
           cache: "npm"            # Changed from "pnpm" to "npm"
 
       - name: Install dependencies
-        run: npm ci               # "ci" is faster and safer than "install" for pipelines
+        run: npm install               # "ci" is faster and safer than "install" for pipelines
 
       - name: Run lint
         run: npm run lint         # Changed from "pnpm lint"
