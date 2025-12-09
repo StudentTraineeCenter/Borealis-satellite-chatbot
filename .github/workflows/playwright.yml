@@ -21,17 +21,18 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
-          # REMOVED: cache: 'npm' (This causes errors if package-lock.json is missing)
+          # Cache line removed
 
       - name: Install dependencies
-        run: npm install
+        # Using --legacy-peer-deps to ignore React 19 conflicts
+        run: npm install --legacy-peer-deps
 
       - name: Cache Playwright browsers
         uses: actions/cache@v3
         id: playwright-cache
         with:
           path: ~/.cache/ms-playwright
-          # EDITED: Changed to package.json so it doesn't fail on missing lock file
+          # Changed hashFiles to look at package.json since lock file is missing
           key: ${{ runner.os }}-playwright-${{ hashFiles('**/package.json') }}
 
       - name: Install Playwright Browsers
