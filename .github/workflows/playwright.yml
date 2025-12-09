@@ -20,11 +20,10 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 24.x      # Updated to 24.x
-          # Cache line removed
+          node-version: 24.x
+          # IMPORTANT: Ensure "cache: npm" is DELETED here.
 
       - name: Install dependencies
-        # Using --legacy-peer-deps to ignore React 19 conflicts
         run: npm install --legacy-peer-deps
 
       - name: Cache Playwright browsers
@@ -32,7 +31,7 @@ jobs:
         id: playwright-cache
         with:
           path: ~/.cache/ms-playwright
-          # Changed hashFiles to look at package.json since lock file is missing
+          # This must be 'package.json' (not lock file)
           key: ${{ runner.os }}-playwright-${{ hashFiles('**/package.json') }}
 
       - name: Install Playwright Browsers
