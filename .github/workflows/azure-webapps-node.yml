@@ -22,14 +22,14 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ env.NODE_VERSION }}
-        # REMOVED: cache: 'npm' (This stops the "Lock file not found" error)
+        # IMPORTANT: "cache: npm" MUST be removed or this will fail
 
     - name: npm install, build, and test
-      # ▼▼▼ THIS IS THE FIX FOR THE MIGRATION ERROR ▼▼▼
+      # ▼▼▼ THIS IS REQUIRED TO FIX "POSTGRES_URL is not defined" ▼▼▼
       env:
         POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
         AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
-      # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+      # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
       run: |
         npm install --legacy-peer-deps
         npm run build --if-present
