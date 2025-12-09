@@ -8,8 +8,6 @@ env:
   AZURE_WEBAPP_NAME: satelitte
   AZURE_WEBAPP_PACKAGE_PATH: '.'
   NODE_VERSION: '24.x'
-  POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
-  AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
 
 permissions:
   contents: read
@@ -24,15 +22,18 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ env.NODE_VERSION }}
-        # Cache line removed to prevent "lock file not found" error
+        # REMOVED: cache: 'npm' (This stops the "Lock file not found" error)
 
     - name: npm install, build, and test
+      # ▼▼▼ THIS IS THE FIX FOR THE MIGRATION ERROR ▼▼▼
+      env:
+        POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+        AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+      # ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
       run: |
-        # Using --legacy-peer-deps to ignore React 19 conflicts
         npm install --legacy-peer-deps
         npm run build --if-present
         npm run test --if-present
-        # Removing node_modules to speed up artifact upload
         rm -rf node_modules
 
     - name: Upload artifact for deployment job
