@@ -4,22 +4,23 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version: [20]
     steps:
       - uses: actions/checkout@v4
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9.12.3
+
+      # Removed pnpm setup step here
+
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: "pnpm"
+          cache: "npm"            # Changed from "pnpm" to "npm"
+
       - name: Install dependencies
-        run: pnpm install
+        run: npm install               # "ci" is faster and safer than "install" for pipelines
+
       - name: Run lint
-        run: pnpm lint
+        run: npm run lint         # Changed from "pnpm lint"
