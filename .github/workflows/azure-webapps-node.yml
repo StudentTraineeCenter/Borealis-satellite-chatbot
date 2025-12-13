@@ -32,14 +32,17 @@ jobs:
         npm install --legacy-peer-deps
         # Run the build
         npm run build --if-present
-        # --- FIX: MANUALLY ASSEMBLE STANDALONE FOLDER ---
-        # 1. Create the target directory structure inside standalone
-        # (This ensures the copy commands don't fail or behave weirdly)
         mkdir -p .next/standalone/.next
         mkdir -p .next/standalone/public
         cp .next/BUILD_ID .next/standalone/.next/BUILD_ID
         cp -r .next/static .next/standalone/.next/
         cp -r public .next/standalone/
+        
+    - name: Upload artifact for deployment job
+      uses: actions/upload-artifact@v4
+      with:
+        name: node-app
+        path: .next/standalone
 
 
   deploy:
