@@ -30,19 +30,16 @@ jobs:
     - name: npm install, build, and test
       run: |
         npm install --legacy-peer-deps
+        # Run the build
         npm run build --if-present
-        # 1. Copy public assets (Next.js doesn't do this automatically for standalone)
-        cp -r public .next/standalone/
+        # --- FIX: MANUALLY ASSEMBLE STANDALONE FOLDER ---
+        # 1. Create the target directory structure inside standalone
+        # (This ensures the copy commands don't fail or behave weirdly)
+        mkdir -p .next/standalone/.next
+        mkdir -p .next/standalone/public
+        cp .next/BUILD_ID .next/standalone/.next/BUILD_ID
         cp -r .next/static .next/standalone/.next/
-        # 2. Copy migration scripts so they exist in the standalone folder
-        # (Ensure you copy whatever folder contains your db logic)
-        cp -r lib .next/standalone/
- 
-    - name: Upload artifact for deployment job
-      uses: actions/upload-artifact@v4
-      with:
-        name: node-app
-        path: .next/standalone  # <--- Only upload the optimized folder
+        cp -r public .next/standalone/
 
 
   deploy:
