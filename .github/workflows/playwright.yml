@@ -20,28 +20,26 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: lts/*
-          cache: 'npm'  # Automatically handles npm cache
+          node-version: 24.x
+          # IMPORTANT: Ensure "cache: npm" is DELETED here.
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --legacy-peer-deps
 
       - name: Cache Playwright browsers
         uses: actions/cache@v3
         id: playwright-cache
         with:
           path: ~/.cache/ms-playwright
-          # Updated key to look at package-lock.json instead of pnpm-lock.yaml
-          key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
+          # This must be 'package.json' (not lock file)
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/package.json') }}
 
       - name: Install Playwright Browsers
-        # Only install if cache missed
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps chromium
 
       - name: Run Playwright tests
         run: npx playwright test
-        # OR: npm run test (if you have a "test" script in package.json)
 
       - uses: actions/upload-artifact@v4
         if: always() && !cancelled()

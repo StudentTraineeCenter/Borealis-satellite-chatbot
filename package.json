@@ -4,8 +4,6 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbo",
-    "build": "tsx lib/db/migrate && next build",
-    "start": "next start",
     "lint": "npx ultracite@latest check",
     "format": "npx ultracite@latest fix",
     "db:generate": "drizzle-kit generate",
@@ -15,7 +13,9 @@
     "db:pull": "drizzle-kit pull",
     "db:check": "drizzle-kit check",
     "db:up": "drizzle-kit up",
-    "test": "export PLAYWRIGHT=True && pnpm exec playwright test"
+    "build": "npm run db:generate && next build",
+    "start": "node server.js",
+    "test": "export PLAYWRIGHT=True && npx playwright test"
   },
   "dependencies": {
     "@ai-sdk/gateway": "^1.0.15",
