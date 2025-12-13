@@ -26,6 +26,7 @@ import type { Attachment, ChatMessage } from "@/lib/types";
 import type { AppUsage } from "@/lib/usage";
 import { cn } from "@/lib/utils";
 import { Context } from "./elements/context";
+import type { LocationData } from "./location-selector";
 import {
   PromptInput,
   PromptInputModelSelect,
@@ -64,6 +65,8 @@ function PureMultimodalInput({
   selectedModelId,
   onModelChange,
   usage,
+  selectedLocation,
+  onLocationChange,
 }: {
   chatId: string;
   input: string;
@@ -80,6 +83,8 @@ function PureMultimodalInput({
   selectedModelId: string;
   onModelChange?: (modelId: string) => void;
   usage?: AppUsage;
+  selectedLocation?: LocationData | null;
+  onLocationChange?: (location: LocationData | null) => void;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
@@ -373,7 +378,10 @@ function PureMultimodalInput({
               onModelChange={onModelChange}
               selectedModelId={selectedModelId}
             />
-            <LocationSelector />
+            <LocationSelector
+              selectedLocation={selectedLocation ?? undefined}
+              onLocationChange={onLocationChange}
+            />
           </PromptInputTools>
 
           {status === "submitted" ? (
@@ -410,6 +418,9 @@ export const MultimodalInput = memo(
       return false;
     }
     if (prevProps.selectedModelId !== nextProps.selectedModelId) {
+      return false;
+    }
+    if (!equal(prevProps.selectedLocation, nextProps.selectedLocation)) {
       return false;
     }
 

@@ -4,7 +4,6 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { useGeolocated } from "react-geolocated";
 import useSWR, { useSWRConfig } from "swr";
 import { unstable_serialize } from "swr/infinite";
 import { ChatHeader } from "@/components/chat-header";
@@ -64,33 +63,23 @@ export function Chat({
   const [showCreditCardAlert, setShowCreditCardAlert] = useState(false);
   const [currentModelId, setCurrentModelId] = useState(initialChatModel);
   const currentModelIdRef = useRef(currentModelId);
+  const [selectedLocation, setSelectedLocation] = useState<{
+    name: string;
+    lat: number;
+    lon: number;
+  } | null>(null);
 
   useEffect(() => {
     currentModelIdRef.current = currentModelId;
   }, [currentModelId]);
 
-  const { coords, isGeolocationAvailable } = useGeolocated({
-    positionOptions: {
-      enableHighAccuracy: true,
-      maximumAge: 0,
-      timeout: Number.POSITIVE_INFINITY,
-    },
-    watchPosition: true,
-    suppressLocationOnMount: false,
-    geolocationProvider: navigator.geolocation,
-    watchLocationPermissionChange: true,
-  });
-
-  console.log(isGeolocationAvailable);
-
-  const location: UserLocation | null = coords
+  const location: UserLocation | null = selectedLocation
     ? {
-        latitude: coords.latitude,
-        altitude: coords.altitude ?? 200,
-        longitude: coords.longitude,
+        latitude: selectedLocation.lat,
+        altitude: 200,
+        longitude: selectedLocation.lon,
       }
     : null;
-  console.log(location);
 
   const {
     messages,
@@ -217,6 +206,8 @@ export function Chat({
               status={status}
               stop={stop}
               usage={usage}
+              selectedLocation={selectedLocation}
+              onLocationChange={setSelectedLocation}
             />
           )}
         </div>
