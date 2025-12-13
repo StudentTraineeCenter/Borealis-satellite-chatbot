@@ -14,7 +14,7 @@
     "db:check": "drizzle-kit check",
     "db:up": "drizzle-kit up",
     "build": "npm run db:generate && next build",
-    "start": "next start",
+    "start": "node server.js",
     "test": "export PLAYWRIGHT=True && npx playwright test"
   },
   "dependencies": {
