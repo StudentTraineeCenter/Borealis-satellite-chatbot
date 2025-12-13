@@ -4,6 +4,7 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { useGeolocated } from "react-geolocated";
 import useSWR, { useSWRConfig } from "swr";
 import { unstable_serialize } from "swr/infinite";
 import { ChatHeader } from "@/components/chat-header";
@@ -22,7 +23,7 @@ import { useAutoResume } from "@/hooks/use-auto-resume";
 import { useChatVisibility } from "@/hooks/use-chat-visibility";
 import type { Vote } from "@/lib/db/schema";
 import { ChatSDKError } from "@/lib/errors";
-import type { Attachment, ChatMessage } from "@/lib/types";
+import type { Attachment, ChatMessage, UserLocation } from "@/lib/types";
 import type { AppUsage } from "@/lib/usage";
 import { fetcher, fetchWithErrorHandlers, generateUUID } from "@/lib/utils";
 import { Artifact } from "./artifact";
@@ -68,6 +69,29 @@ export function Chat({
     currentModelIdRef.current = currentModelId;
   }, [currentModelId]);
 
+  const { coords, isGeolocationAvailable } = useGeolocated({
+    positionOptions: {
+      enableHighAccuracy: true,
+      maximumAge: 0,
+      timeout: Number.POSITIVE_INFINITY,
+    },
+    watchPosition: true,
+    suppressLocationOnMount: false,
+    geolocationProvider: navigator.geolocation,
+    watchLocationPermissionChange: true,
+  });
+
+  console.log(isGeolocationAvailable);
+
+  const location: UserLocation | null = coords
+    ? {
+        latitude: coords.latitude,
+        altitude: coords.altitude ?? 200,
+        longitude: coords.longitude,
+      }
+    : null;
+  console.log(location);
+
   const {
     messages,
     setMessages,
@@ -92,6 +116,7 @@ export function Chat({
             selectedChatModel: currentModelIdRef.current,
             selectedVisibilityType: visibilityType,
             ...request.body,
+            location,
           },
         };
       },

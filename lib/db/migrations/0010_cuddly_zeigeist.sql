@@ -1,0 +1,1 @@
+ALTER TABLE "Cached_Data" ADD COLUMN "duration" integer NOT NULL;

@@ -1,4 +1,3 @@
-import { geolocation } from "@vercel/functions";
 import {
   convertToModelMessages,
   createUIMessageStream,
@@ -20,12 +19,9 @@ import { auth, type UserType } from "@/app/(auth)/auth";
 import type { VisibilityType } from "@/components/visibility-selector";
 import { entitlementsByUserType } from "@/lib/ai/entitlements";
 import type { ChatModel } from "@/lib/ai/models";
-import { type RequestHints, systemPrompt } from "@/lib/ai/prompts";
+import { locationSatellitePrompt, satellitePrompt } from "@/lib/ai/prompts";
 import { myProvider } from "@/lib/ai/providers";
-import { createDocument } from "@/lib/ai/tools/create-document";
-import { getWeather } from "@/lib/ai/tools/get-weather";
-import { requestSuggestions } from "@/lib/ai/tools/request-suggestions";
-import { updateDocument } from "@/lib/ai/tools/update-document";
+import { getSatInfo } from "@/lib/ai/tools/get-sat-info";
 import { isProductionEnvironment } from "@/lib/constants";
 import {
   createStreamId,
@@ -39,7 +35,7 @@ import {
 } from "@/lib/db/queries";
 import type { DBMessage } from "@/lib/db/schema";
 import { ChatSDKError } from "@/lib/errors";
-import type { ChatMessage } from "@/lib/types";
+import type { ChatMessage, UserLocation } from "@/lib/types";
 import type { AppUsage } from "@/lib/usage";
 import { convertToUIMessages, generateUUID } from "@/lib/utils";
 import { generateTitleFromUserMessage } from "../../actions";
@@ -90,6 +86,7 @@ export async function POST(request: Request) {
 
   try {
     const json = await request.json();
+    console.log(json);
     requestBody = postRequestBodySchema.parse(json);
   } catch (_) {
     return new ChatSDKError("bad_request:api").toResponse();
@@ -101,11 +98,13 @@ export async function POST(request: Request) {
       message,
       selectedChatModel,
       selectedVisibilityType,
+      location,
     }: {
       id: string;
       message: ChatMessage;
       selectedChatModel: ChatModel["id"];
       selectedVisibilityType: VisibilityType;
+      location: UserLocation | null;
     } = requestBody;
 
     const session = await auth();
@@ -149,7 +148,7 @@ export async function POST(request: Request) {
     }
 
     const uiMessages = [...convertToUIMessages(messagesFromDb), message];
-
+    /*
     const { longitude, latitude, city, country } = geolocation(request);
 
     const requestHints: RequestHints = {
@@ -158,7 +157,7 @@ export async function POST(request: Request) {
       city,
       country,
     };
-
+*/
     await saveMessages({
       messages: [
         {
@@ -168,6 +167,7 @@ export async function POST(request: Request) {
           parts: message.parts,
           attachments: [],
           createdAt: new Date(),
+          sat_id: null,
         },
       ],
     });
@@ -180,28 +180,17 @@ export async function POST(request: Request) {
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {
         const result = streamText({
-          model: myProvider.languageModel(selectedChatModel),
-          system: systemPrompt({ selectedChatModel, requestHints }),
+          model: myProvider("gpt-5-mini"),
+          system: location
+            ? locationSatellitePrompt(location)
+            : satellitePrompt,
           messages: convertToModelMessages(uiMessages),
           stopWhen: stepCountIs(5),
           experimental_activeTools:
-            selectedChatModel === "chat-model-reasoning"
-              ? []
-              : [
-                  "getWeather",
-                  "createDocument",
-                  "updateDocument",
-                  "requestSuggestions",
-                ],
+            selectedChatModel === "chat-model-reasoning" ? [] : ["getSatInfo"],
           experimental_transform: smoothStream({ chunking: "word" }),
           tools: {
-            getWeather,
-            createDocument: createDocument({ session, dataStream }),
-            updateDocument: updateDocument({ session, dataStream }),
-            requestSuggestions: requestSuggestions({
-              session,
-              dataStream,
-            }),
+            getSatInfo,
           },
           experimental_telemetry: {
             isEnabled: isProductionEnvironment,
@@ -210,8 +199,7 @@ export async function POST(request: Request) {
           onFinish: async ({ usage }) => {
             try {
               const providers = await getTokenlensCatalog();
-              const modelId =
-                myProvider.languageModel(selectedChatModel).modelId;
+              const modelId = "gpt-5-mini";
               if (!modelId) {
                 finalMergedUsage = usage;
                 dataStream.write({
@@ -259,6 +247,7 @@ export async function POST(request: Request) {
             createdAt: new Date(),
             attachments: [],
             chatId: id,
+            sat_id: null,
           })),
         });
 

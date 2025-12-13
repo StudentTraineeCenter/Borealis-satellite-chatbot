@@ -30,6 +30,12 @@ export type ChatTools = {
   requestSuggestions: requestSuggestionsTool;
 };
 
+export type UserLocation = {
+  latitude: number;
+  longitude: number;
+  altitude: number;
+};
+
 export type CustomUIDataTypes = {
   textDelta: string;
   imageDelta: string;

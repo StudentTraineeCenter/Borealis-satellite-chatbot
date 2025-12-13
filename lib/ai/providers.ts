@@ -1,11 +1,9 @@
-import { gateway } from "@ai-sdk/gateway";
-import {
-  customProvider,
-  extractReasoningMiddleware,
-  wrapLanguageModel,
-} from "ai";
-import { isTestEnvironment } from "../constants";
+import { createOpenAI } from "@ai-sdk/openai";
 
+export const myProvider = createOpenAI({
+  baseURL: process.env.OPENAI_API_URL,
+});
+/*
 export const myProvider = isTestEnvironment
   ? (() => {
       const {
@@ -34,3 +32,4 @@ export const myProvider = isTestEnvironment
         "artifact-model": gateway.languageModel("xai/grok-2-1212"),
       },
     });
+*/

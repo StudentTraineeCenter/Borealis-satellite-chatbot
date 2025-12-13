@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/nursery/useMaxParams: <explanation> */
 import "server-only";
 
 import {
@@ -10,6 +11,7 @@ import {
   gte,
   inArray,
   lt,
+  lte,
   type SQL,
 } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
@@ -20,12 +22,17 @@ import { ChatSDKError } from "../errors";
 import type { AppUsage } from "../usage";
 import { generateUUID } from "../utils";
 import {
+  type Cached_Data,
   type Chat,
+  cached_data,
   chat,
   type DBMessage,
   document,
   message,
+  type New_Cached_Data,
+  type Satellite,
   type Suggestion,
+  satellite,
   stream,
   suggestion,
   type User,
@@ -41,6 +48,99 @@ import { generateHashedPassword } from "./utils";
 // biome-ignore lint: Forbidden non-null assertion.
 const client = postgres(process.env.POSTGRES_URL!);
 const db = drizzle(client);
+
+export async function getSatelliteById(id: number): Promise<Satellite> {
+  try {
+    return (await db.select().from(satellite).where(eq(satellite.id, id)))[0];
+  } catch (_error) {
+    throw new ChatSDKError("bad_request:database", "Failed to get satellite");
+  }
+}
+
+export async function saveCacheData(
+  sat: Satellite,
+  ins_cached_data: New_Cached_Data
+) {
+  try {
+    await db.insert(satellite).values(sat).onConflictDoNothing();
+
+    await db.insert(cached_data).values(ins_cached_data);
+  } catch (_error) {
+    throw new ChatSDKError(
+      "bad_request:database",
+      "Failed to create cache data"
+    );
+  }
+}
+
+export async function getSatHISTORICCachedData(
+  satellite_norad_id: number,
+  alt: number,
+  lat: number,
+  lng: number,
+  prediction_days: number,
+  min_visibility_sec: number
+): Promise<Cached_Data[]> {
+  try {
+    console.log(
+      new Date(Date.now() + 24 * 60 * 60 * prediction_days).toUTCString()
+    );
+    return await db
+      .select()
+      .from(cached_data)
+      .where(
+        and(
+          eq(cached_data.sat_id, satellite_norad_id),
+          gte(cached_data.start_utc, new Date()),
+          lte(
+            cached_data.start_utc,
+            new Date(Date.now() + 24 * 60 * 60 * 1000 * prediction_days)
+          ),
+          eq(cached_data.latitude, lat),
+          eq(cached_data.altitude, alt),
+          eq(cached_data.longitude, lng),
+          gte(cached_data.duration, min_visibility_sec)
+        )
+      )
+      .orderBy(asc(cached_data.start_utc));
+  } catch (_error) {
+    throw new ChatSDKError("bad_request:database", "Failed to get cached data");
+  }
+}
+
+// biome-ignore lint/nursery/useMaxParams: <explanation>
+export async function getSatRecentCachedData(
+  satellite_norad_id: number,
+  alt: number,
+  lat: number,
+  lng: number,
+  prediction_days: number,
+  min_visibility_sec: number
+): Promise<Cached_Data[]> {
+  try {
+    return await db
+      .select()
+      .from(cached_data)
+      .where(
+        and(
+          eq(cached_data.sat_id, satellite_norad_id),
+          gte(cached_data.start_utc, new Date()),
+          lte(
+            cached_data.start_utc,
+            new Date(Date.now() + 24 * 60 * 60 * 1000 * prediction_days)
+          ),
+          gt(cached_data.eol, new Date()),
+          eq(cached_data.latitude, lat),
+          eq(cached_data.altitude, alt),
+          eq(cached_data.longitude, lng),
+          gte(cached_data.duration, min_visibility_sec)
+        )
+      )
+      .orderBy(asc(cached_data.start_utc));
+  } catch (_error) {
+    throw new ChatSDKError("bad_request:database", "Failed to get cached data");
+  }
+}
 
 export async function getUser(email: string): Promise<User[]> {
   try {
@@ -100,6 +200,7 @@ export async function saveChat({
       visibility,
     });
   } catch (_error) {
+    console.log(_error);
     throw new ChatSDKError("bad_request:database", "Failed to save chat");
   }
 }
@@ -134,7 +235,7 @@ export async function deleteAllChatsByUserId({ userId }: { userId: string }) {
       return { deletedCount: 0 };
     }
 
-    const chatIds = userChats.map(c => c.id);
+    const chatIds = userChats.map((c) => c.id);
 
     await db.delete(vote).where(inArray(vote.chatId, chatIds));
     await db.delete(message).where(inArray(message.chatId, chatIds));
@@ -223,6 +324,7 @@ export async function getChatsByUserId({
       hasMore,
     };
   } catch (_error) {
+    console.log(_error);
     throw new ChatSDKError(
       "bad_request:database",
       "Failed to get chats by user id"

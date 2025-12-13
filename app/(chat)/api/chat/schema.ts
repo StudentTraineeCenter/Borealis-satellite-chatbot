@@ -23,6 +23,13 @@ export const postRequestBodySchema = z.object({
   }),
   selectedChatModel: z.enum(["chat-model", "chat-model-reasoning"]),
   selectedVisibilityType: z.enum(["public", "private"]),
+  location: z
+    .object({
+      latitude: z.number(),
+      longitude: z.number(),
+      altitude: z.number(),
+    })
+    .or(z.null()),
 });
 
 export type PostRequestBody = z.infer<typeof postRequestBodySchema>;

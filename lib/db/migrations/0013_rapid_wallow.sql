@@ -1,0 +1,1 @@
+ALTER TABLE "Cached_Data" ALTER COLUMN "created_at" DROP NOT NULL;

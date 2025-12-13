@@ -1,11 +1,13 @@
-import type { InferSelectModel } from "drizzle-orm";
+import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
 import {
   boolean,
   foreignKey,
+  integer,
   json,
   jsonb,
   pgTable,
   primaryKey,
+  real,
   text,
   timestamp,
   uuid,
@@ -59,6 +61,7 @@ export const message = pgTable("Message_v2", {
   parts: json("parts").notNull(),
   attachments: json("attachments").notNull(),
   createdAt: timestamp("createdAt").notNull(),
+  sat_id: integer("sat_id").references(() => satellite.id),
 });
 
 export type DBMessage = InferSelectModel<typeof message>;
@@ -127,6 +130,35 @@ export const document = pgTable(
 );
 
 export type Document = InferSelectModel<typeof document>;
+
+export const satellite = pgTable("Satellite", {
+  id: integer("sat_id").primaryKey(),
+  name: text("sat_name").notNull(),
+});
+
+export type Satellite = InferSelectModel<typeof satellite>;
+
+export const cached_data = pgTable("Cached_Data", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  created_at: timestamp("created_at").defaultNow(),
+  eol: timestamp("eol").notNull(),
+  start_utc: timestamp("start_utc").notNull(),
+  start_az: real("start_az").notNull(),
+  end_az: real("end_az").notNull(),
+  start_elev: real("start_elev").notNull(),
+  end_elev: real("end_elev").notNull(),
+  latitude: real("lat").notNull(),
+  longitude: real("lon").notNull(),
+  altitude: real("elev").notNull(),
+  sat_id: integer("sat_id")
+    .notNull()
+    .references(() => satellite.id),
+  duration: integer("duration").notNull(),
+});
+
+export type Cached_Data = InferSelectModel<typeof cached_data>;
+
+export type New_Cached_Data = InferInsertModel<typeof cached_data>;
 
 export const suggestion = pgTable(
   "Suggestion",

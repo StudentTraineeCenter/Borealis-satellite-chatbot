@@ -1,0 +1,1 @@
+ALTER TABLE "Cached_Data" DROP COLUMN IF EXISTS "end_utc";
