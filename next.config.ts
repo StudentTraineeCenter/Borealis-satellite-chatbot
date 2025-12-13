@@ -1,8 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: "standalone",
-  experimental: {
+  reactStrictMode: true,
+    distDir: 'build',
+    output: 'standalone',  experimental: {
     ppr: true,
   },
   images: {
