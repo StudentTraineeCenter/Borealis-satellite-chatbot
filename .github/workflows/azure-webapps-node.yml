@@ -35,6 +35,12 @@ jobs:
         cp -r ./build/static ./build/standalone/build
         cp -r ./public ./build/standalone
         npx esbuild lib/db/migrate.ts --bundle --platform=node --outfile=build/standalone/migrate.js --packages=external
+
+        cp package.json ./build/standalone/
+        cp package-lock.json ./build/standalone/
+
+        cd build/standalone
+        npm ci --omit=dev
  
     - name: Upload artifact
       uses: actions/upload-artifact@v4
