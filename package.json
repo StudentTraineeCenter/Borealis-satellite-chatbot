@@ -4,8 +4,6 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbo",
-    "build": "db:generate && next build",
-    "start": "tsx lib/db/migrate && next start",
     "lint": "npx ultracite@latest check",
     "format": "npx ultracite@latest fix",
     "db:generate": "drizzle-kit generate",
@@ -15,6 +13,8 @@
     "db:pull": "drizzle-kit pull",
     "db:check": "drizzle-kit check",
     "db:up": "drizzle-kit up",
+    "build": "db:generate && next build",
+    "start": "tsx lib/db/migrate && next start",
     "test": "export PLAYWRIGHT=True && pnpm exec playwright test"
   },
   "dependencies": {
