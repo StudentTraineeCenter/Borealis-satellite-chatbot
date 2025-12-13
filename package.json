@@ -15,7 +15,7 @@
     "db:up": "drizzle-kit up",
     "build": "npm run db:generate && next build",
     "start": "tsx lib/db/migrate && next start",
-    "test": "export PLAYWRIGHT=True && pnpm exec playwright test"
+    "test": "export PLAYWRIGHT=True && npx playwright test"
   },
   "dependencies": {
     "@ai-sdk/gateway": "^1.0.15",
