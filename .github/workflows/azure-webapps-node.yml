@@ -31,29 +31,15 @@ jobs:
       run: |
         npm install --legacy-peer-deps
         npm run build --if-present
-        # --- PREPARE STANDALONE FOLDER ---
-        # 1. Create necessary directories
-        mkdir -p .next/standalone/.next
-        mkdir -p .next/standalone/public
+        # Copy static & public (Next.js standalone structure)
+        cp -r ./build/static ./build/standalone/build
+        cp -r ./public ./build/standalone.
  
-        # 2. Copy the BUILD_ID (Critical for the error you are seeing)
-        cp .next/BUILD_ID .next/standalone/.next/BUILD_ID
- 
-        # 3. Copy Static Assets
-        cp -r .next/static .next/standalone/.next/
-        cp -r public .next/standalone/
- 
-    - name: Create Zip Archive (Include Hidden Files)
-      run: |
-        cd .next/standalone
-        # zip -r . includes hidden files (like .next) correctly
-        zip -r ../../release.zip .
- 
-    - name: Upload artifact for deployment job
+    - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: node-app
-        path: release.zip  # <--- Upload the zip, not the folder
+        path: build/standalone  # This will now include startup.sh
  
   deploy:
     permissions:
@@ -76,4 +62,4 @@ jobs:
       with:
         app-name: ${{ env.AZURE_WEBAPP_NAME }}
         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-        package: release.zip  # <--- Deploy the zip file directly
+        package: .
