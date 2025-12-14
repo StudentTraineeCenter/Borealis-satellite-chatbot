@@ -39,11 +39,11 @@ jobs:
         cp package.json ./build/standalone/
         cp package-lock.json ./build/standalone/
 
+        cp -r ./lib/db/migrations ./build/standalone/
+
         cd build/standalone
         npm ci --omit=dev --legacy-peer-deps
 
-        cp -r ./lib/db/migrations ./build/standalone/
- 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
