@@ -39,7 +39,7 @@ jobs:
         cp package.json ./build/standalone/
         cp package-lock.json ./build/standalone/
 
-        cp -r ./lib/db/migrations/* ./build/standalone/
+        cp -r ./lib/db/migrations/* ./build/standalone/lib/db/migrations/
 
         cd build/standalone
         npm ci --omit=dev --legacy-peer-deps
