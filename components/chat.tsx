@@ -79,6 +79,7 @@ export function Chat({
     suppressLocationOnMount: false,
     geolocationProvider: navigator.geolocation,
     watchLocationPermissionChange: true,
+    userDecisionTimeout: 30_000,
   });
 
   console.log(isGeolocationAvailable);
