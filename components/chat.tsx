@@ -4,6 +4,7 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { useGeolocated } from "react-geolocated";
 import useSWR, { useSWRConfig } from "swr";
 import { unstable_serialize } from "swr/infinite";
 import { ChatHeader } from "@/components/chat-header";
@@ -73,7 +74,6 @@ export function Chat({
     currentModelIdRef.current = currentModelId;
   }, [currentModelId]);
 
-<<<<<<< HEAD
   const { coords, isGeolocationAvailable } = useGeolocated({
     positionOptions: {
       enableHighAccuracy: true,
@@ -90,13 +90,10 @@ export function Chat({
   console.log(isGeolocationAvailable);
 
   const location: UserLocation | null = coords
-=======
-  const location: UserLocation | null = selectedLocation
->>>>>>> branch 'main' of git@github.com:StudentTraineeCenter/Borealis-satellite-chatbot.git
     ? {
-        latitude: selectedLocation.lat,
-        altitude: 200,
-        longitude: selectedLocation.lon,
+        latitude: coords.latitude,
+        altitude: coords.altitude ?? 250,
+        longitude: coords.longitude,
       }
     : null;
 
@@ -215,7 +212,9 @@ export function Chat({
               chatId={id}
               input={input}
               messages={messages}
+              onLocationChange={setSelectedLocation}
               onModelChange={setCurrentModelId}
+              selectedLocation={selectedLocation}
               selectedModelId={currentModelId}
               selectedVisibilityType={visibilityType}
               sendMessage={sendMessage}
@@ -225,8 +224,6 @@ export function Chat({
               status={status}
               stop={stop}
               usage={usage}
-              selectedLocation={selectedLocation}
-              onLocationChange={setSelectedLocation}
             />
           )}
         </div>
