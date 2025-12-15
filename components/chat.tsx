@@ -89,13 +89,22 @@ export function Chat({
 
   console.log(isGeolocationAvailable);
 
-  const location: UserLocation | null = coords
+  const autoLocation: UserLocation | null = coords
     ? {
         latitude: coords.latitude,
         altitude: coords.altitude ?? 250,
         longitude: coords.longitude,
       }
     : null;
+
+  // Use manually selected location if available, otherwise fall back to auto location
+  const location: UserLocation | null = selectedLocation
+    ? {
+        latitude: selectedLocation.lat,
+        longitude: selectedLocation.lon,
+        altitude: 250, // Default altitude for manual selections
+      }
+    : autoLocation;
 
   const {
     messages,
