@@ -23,7 +23,7 @@ import { useAutoResume } from "@/hooks/use-auto-resume";
 import { useChatVisibility } from "@/hooks/use-chat-visibility";
 import type { Vote } from "@/lib/db/schema";
 import { ChatSDKError } from "@/lib/errors";
-import type { Attachment, ChatMessage, UserLocation } from "@/lib/types";
+import type { Attachment, ChatMessage } from "@/lib/types";
 import type { AppUsage } from "@/lib/usage";
 import { fetcher, fetchWithErrorHandlers, generateUUID } from "@/lib/utils";
 import { Artifact } from "./artifact";
@@ -89,14 +89,6 @@ export function Chat({
 
   console.log(isGeolocationAvailable);
 
-  const location: UserLocation | null = coords
-    ? {
-        latitude: coords.latitude,
-        altitude: coords.altitude ?? 250,
-        longitude: coords.longitude,
-      }
-    : null;
-
   const {
     messages,
     setMessages,
@@ -121,7 +113,19 @@ export function Chat({
             selectedChatModel: currentModelIdRef.current,
             selectedVisibilityType: visibilityType,
             ...request.body,
-            location,
+            location: selectedLocation
+              ? {
+                  latitude: selectedLocation?.lat,
+                  altitude: 250,
+                  longitude: selectedLocation?.lon,
+                }
+              : coords
+                ? {
+                    latitude: coords.latitude,
+                    altitude: coords.altitude ?? 250,
+                    longitude: coords.longitude,
+                  }
+                : null,
           },
         };
       },
